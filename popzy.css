@@ -1,55 +1,133 @@
-.modal-backdrop {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.6rem;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+}
+
+button {
+    border: none;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.btn {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 600;
+}
+
+header,
+article {
+    width: min(740px, 90%);
+    margin: 20px auto 0;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    padding: 20px 0;
+    background: #fff;
+}
+
+article p {
+    margin: 10px 0;
+}
+
+article img {
+    max-width: 100%;
+}
+
+.popzy__backdrop {
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     opacity: 0;
     visibility: hidden;
     transition: opacity, visibility;
     transition-duration: 0.3s;
 }
 
-.modal-backdrop.show {
+.popzy--show {
     opacity: 1;
     visibility: visible;
 }
 
-.modal-backdrop.show .modal-container {
+.popzy--show .popzy__container {
     transform: scale(1);
 }
-.modal-container {
+
+.popzy__container {
     position: relative;
     width: min(600px, 90%);
-    background-color: #fff;
     padding: 20px 20px 0;
-    border-radius: 10px;
+    border-radius: 6px;
+    background: #fff;
     transform: scale(0);
     transition: transform 0.3s;
 }
-.modal-close {
+
+.popzy__close {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 10px;
+    right: 10px;
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    font-size: 2rem;
     color: #666;
+    background: #ebebeb;
+    font-size: 2rem;
 }
-.modal-content {
+
+.popzy__close:hover {
+    color: #333;
+}
+
+.popzy__content {
     max-height: 80vh;
     overflow-y: auto;
 }
 
-.no-scroll {
-    overflow: hidden;
-}
-
-.modal-footer {
-    padding: 20px 0;
+.popzy__footer {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    padding: 20px 0;
+}
+
+.popzy__btn {
+    padding: 8px 20px;
+    color: #fff;
+    background: #34495e;
+}
+
+.popzy__btn--primary {
+    background: #3498db;
+}
+
+.popzy__btn--danger {
+    background: #e74c3c;
+}
+
+.popzy__btn--pull-left {
+    margin-right: auto;
+}
+
+.popzy--no-scroll {
+    overflow: hidden;
 }

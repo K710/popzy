@@ -1,22 +1,39 @@
 Popzy.elements = [];
 
 function Popzy(options = {}) {
+    if (!options.content && !options.templateId) {
+        console.error("You must provide one of 'content' or 'templateId'.");
+    }
+
+    if (options.content && options.templateId) {
+        options.templateId = null;
+        console.warn(
+            "If have both content and templateId, template id will be skip."
+        );
+    }
+
+    if (options.templateId) {
+        this.template = document.querySelector(`#${options.templateId}`);
+
+        if (!this.template) {
+            console.error(`#${options.templateId} does not exist!`);
+            return;
+        }
+    }
+
     this.opt = Object.assign(
         {
+            enableScrollLock: true,
             destroyOnClose: true,
             footer: false,
             cssClass: [],
             closeMethods: ["button", "overlay", "escape"],
+            scrollLockTarget: () => document.body,
         },
         options
     );
-    this.template = document.querySelector(`#${this.opt.templateId}`);
 
-    if (!this.template) {
-        console.error(`#${this.opt.templateId} does not exist!`);
-        return;
-    }
-
+    this.content = this.template.content;
     const { closeMethods } = this.opt;
     this._allowButtonClose = closeMethods.includes("button");
     this._allowBackdropClose = closeMethods.includes("overlay");
@@ -28,7 +45,13 @@ function Popzy(options = {}) {
 }
 
 Popzy.prototype._build = function () {
-    const content = this.template.content.cloneNode(true);
+    const contentNode = this.content
+        ? document.createElement("div")
+        : this.template.content.cloneNode(true);
+
+    if (this.content) {
+        contentNode.innerHTML = this.content;
+    }
 
     // Create modal elements
     this._backdrop = document.createElement("div");
@@ -50,12 +73,12 @@ Popzy.prototype._build = function () {
         container.append(closeBtn);
     }
 
-    const modalContent = document.createElement("div");
-    modalContent.className = "popzy__content";
+    this._modalContent = document.createElement("div");
+    this._modalContent.className = "popzy__content";
 
     // Append content and elements
-    modalContent.append(content);
-    container.append(modalContent);
+    this._modalContent.append(contentNode);
+    container.append(this._modalContent);
 
     if (this.opt.footer) {
         this._modalFooter = document.createElement("div");
@@ -69,6 +92,13 @@ Popzy.prototype._build = function () {
 
     this._backdrop.append(container);
     document.body.append(this._backdrop);
+};
+
+Popzy.prototype.setContent = function (content) {
+    this.content = content;
+    if (this._modalContent) {
+        this._modalContent.innerHTML = this.content;
+    }
 };
 
 Popzy.prototype.setFooterContent = function (html) {
@@ -117,8 +147,18 @@ Popzy.prototype.open = function () {
     }, 0);
 
     // Disable scrolling
-    document.body.classList.add("popzy--no-scroll");
-    document.body.style.paddingRight = this._getScrollbarWidth() + "px";
+
+    if (this.enableScrollLock) {
+        const target = this.opt.scrollLockTarget();
+        if (this._hasScrollbar(target)) {
+            target.classList.add("popzy--no-scroll");
+            const targetPadRight = parseInt(
+                getComputedStyle(target).paddingRight
+            );
+            target.style.paddingRight =
+                targetPadRight + this._getScrollbarWidth() + "px";
+        }
+    }
 
     // Attach event listeners
     if (this._allowBackdropClose) {
@@ -136,6 +176,17 @@ Popzy.prototype.open = function () {
     this._onTransitionEnd(this.opt.onOpen);
 
     return this._backdrop;
+};
+
+Popzy.prototype._hasScrollbar = (target) => {
+    if ([document.documentElement, document.body].includes(target)) {
+        return (
+            document.documentElement.scrollHeight >
+                document.documentElement.clientHeight ||
+            document.body.scrollHeight > document.body.clientHeight
+        );
+    }
+    return target.scrollHeight > target.clientHeight;
 };
 
 Popzy.prototype._handleEscapeKey = function (e) {
@@ -169,9 +220,12 @@ Popzy.prototype.close = function (destroy = this.opt.destroyOnClose) {
         }
 
         // Enable scrolling
-        if (!Popzy.elements.length) {
-            document.body.classList.remove("popzy--no-scroll");
-            document.body.style.paddingRight = "";
+        if (this.enableScrollLock && !Popzy.elements.length) {
+            const target = this.opt.scrollLockTarget();
+            if (this._hasScrollbar(target)) {
+                target.classList.remove("popzy--no-scroll");
+                target.style.paddingRight = "";
+            }
         }
 
         if (typeof this.opt.onClose === "function") this.opt.onClose();

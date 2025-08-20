@@ -33,7 +33,8 @@ function Popzy(options = {}) {
         options
     );
 
-    this.content = this.template.content;
+    // ...existing code...
+    this.content = this.template ? this.template.content : this.opt.content;
     const { closeMethods } = this.opt;
     this._allowButtonClose = closeMethods.includes("button");
     this._allowBackdropClose = closeMethods.includes("overlay");
@@ -148,7 +149,7 @@ Popzy.prototype.open = function () {
 
     // Disable scrolling
 
-    if (this.enableScrollLock) {
+    if (Popzy.elements.length === 1 && this.opt.enableScrollLock) {
         const target = this.opt.scrollLockTarget();
         if (this._hasScrollbar(target)) {
             target.classList.add("popzy--no-scroll");
